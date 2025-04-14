@@ -39,7 +39,7 @@ app.get("/", (req, res) => {
 //      the request body will contain objects representing the game instance, game board state, and your snake
 //      https://docs.battlesnake.com/api/requests/start
 app.post("/start", (req, res) => {
-  res.statusCode(200).send({});
+  res.status(200);
 });
 
 //TODO: respond to POST requests on "/move". Your response should be an object with a "move" property and optionally
