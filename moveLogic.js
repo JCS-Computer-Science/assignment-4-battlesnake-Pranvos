@@ -128,7 +128,7 @@ export default function move(gameState) {
 
   const safeMoves = Object.keys(moveSafety).filter(direction => moveSafety[direction]);
   if (safeMoves.length === 0) {
-      console.log(`MOVE ${gameState.turn}: No safe moves detected! Moving down`);
+      console.log(`MOVE ${gameState.turn}: No safe moves!`);
       return { move: "down" };
   }
  
