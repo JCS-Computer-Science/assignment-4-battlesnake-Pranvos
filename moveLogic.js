@@ -85,8 +85,6 @@ export default function move(gameState) {
         if (segment.x === myHead.x - 1 && segment.y === myHead.y) {
           moveSafety.left = false;
         }
-
-        
       }
   });
   
