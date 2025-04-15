@@ -71,20 +71,23 @@ export default function move(gameState) {
   //In this case we want to filter out any of these directions for which moveSafety[direction] == false
 
   gameState.board.snakes.forEach(snake => {
-      snake.body.forEach(segment => {
-          if (segment.x === myHead.x && segment.y === myHead.y + 1) {
-              moveSafety.up = false;
-          }
-          if (segment.x === myHead.x && segment.y === myHead.y - 1) {
-              moveSafety.down = false;
-          }
-          if (segment.x === myHead.x + 1 && segment.y === myHead.y) {
-              moveSafety.right = false;
-          }
-          if (segment.x === myHead.x - 1 && segment.y === myHead.y) {
-              moveSafety.left = false;
-          }
-      });
+    for (let i = 0; i < snake.body.length; i++) {
+        const segment = snake.body[i];
+        if (segment.x === myHead.x && segment.y === myHead.y + 1) {
+          moveSafety.up = false;
+        }
+        if (segment.x === myHead.x && segment.y === myHead.y - 1) {
+          moveSafety.down = false;
+        }
+        if (segment.x === myHead.x + 1 && segment.y === myHead.y) {
+          moveSafety.right = false;
+        }
+        if (segment.x === myHead.x - 1 && segment.y === myHead.y) {
+          moveSafety.left = false;
+        }
+
+        
+      }
   });
   
   
