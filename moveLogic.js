@@ -19,7 +19,7 @@ export default function move(gameState) {
         (snake) => snake.id !== gameState.you.id
     );
 
-    // Update moveSafety based on neck position
+    // Update moveSafety based on neck position to avoid immediate self-collision
     if (myNeck) {
         if (myNeck.x < myHead.x) {
             moveSafety.left = false; // Neck is left of head, don't move left
@@ -90,7 +90,7 @@ export default function move(gameState) {
         }
     }
 
-    
+
     const findEnclosableSnakes = () => {
         if (myLength <= 1) return [];
         return snakes.filter(snake => snake.body.length < myLength);
@@ -172,11 +172,21 @@ export default function move(gameState) {
         return closest;
     };
 
+
     let nextMove = "down";
     const closestFood = findClosestFood();
     const enclosureMove = findEnclosureMoveAreaControl();
+    const middleFoodX = boardWidth - 5;
+    const middleFoodY = boardHeight - 5;
+    const isMiddleFood = myHead.x === middleFoodX && myHead.y === middleFoodY;
 
-    if (myHealth > 50 && enclosureMove) {
+   
+    if (isMiddleFood) {
+        moveSafety.up = false;
+        moveSafety.down = false;
+        moveSafety.right = false;
+        moveSafety.left = false;
+    } else if (myHealth > 50 && enclosureMove) {
         nextMove = enclosureMove;
     } else if (closestFood) {
         if (closestFood.x === myHead.x) {
