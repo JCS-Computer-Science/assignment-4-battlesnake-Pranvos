@@ -1,5 +1,4 @@
 export default function move(gameState) {
-    // Initialize move safety object
     let moveSafety = {
         up: true,
         down: true,
@@ -7,7 +6,6 @@ export default function move(gameState) {
         right: true
     };
 
-    // Extract game state variables
     const myHead = gameState.you.body[0];
     const myNeck = gameState.you.body[1];
     const myBody = gameState.you.body;
@@ -92,9 +90,8 @@ export default function move(gameState) {
         }
     }
 
-    // New: Simplified recursive function to count reachable safe spaces
+
     function countReachableSpaces(position, visited, allSnakeBodies, depth, maxDepth) {
-        // Base case: return 0 if position is out of bounds or depth limit is exceeded
         if (position.x < 0 || position.x >= boardWidth || position.y < 0 || position.y >= boardHeight || depth > maxDepth) {
             return 0;
         }
@@ -114,9 +111,9 @@ export default function move(gameState) {
         }
 
         visited.push(positionKey);
-        let count = 1; // Count this tile
+        let count = 1; 
 
-        // Recursively explore neighbors
+
         count = count + countReachableSpaces({ x: position.x, y: position.y + 1 }, visited, allSnakeBodies, depth + 1, maxDepth); // up
         count = count + countReachableSpaces({ x: position.x, y: position.y - 1 }, visited, allSnakeBodies, depth + 1, maxDepth); // down
         count = count + countReachableSpaces({ x: position.x - 1, y: position.y }, visited, allSnakeBodies, depth + 1, maxDepth); // left
@@ -125,7 +122,7 @@ export default function move(gameState) {
         return count;
     }
 
-    // New: Check if a move leads to a safe area to avoid dead ends
+
     function isSafeMove(move) {
         const nextHead = {
             up: { x: myHead.x, y: myHead.y + 1 },
@@ -146,11 +143,11 @@ export default function move(gameState) {
         const visited = [];
         const reachableSpaces = countReachableSpaces(nextHead[move], visited, allSnakeBodies, 0, 100);
 
-        // Require enough safe spaces to survive
+
         return reachableSpaces >= myLength;
     }
 
-    // Update moveSafety to avoid dead ends
+
     moveSafety.up = moveSafety.up && isSafeMove("up");
     moveSafety.down = moveSafety.down && isSafeMove("down");
     moveSafety.left = moveSafety.left && isSafeMove("left");
@@ -193,7 +190,7 @@ export default function move(gameState) {
         return closestFood;
     }
 
-    // Decide next move
+
     let nextMove = "down";
     const closestFood = findClosestFood();
     if (closestFood) {
