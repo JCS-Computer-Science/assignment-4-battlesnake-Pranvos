@@ -19,7 +19,6 @@ export default function move(gameState) {
         return snake.id !== gameState.you.id;
     });
 
-    // Update moveSafety based on neck position to avoid immediate self-collision
     if (myNeck) {
         if (myNeck.x < myHead.x) {
             moveSafety.left = false; // Neck is left of head, don't move left
@@ -91,7 +90,7 @@ export default function move(gameState) {
     }
 
 
-    function countReachableSpaces(position, visited, allSnakeBodies, depth, maxDepth) {
+    function countReachableSpaces(position, visited, allSnakeBodies, predictedEnemyHeads, depth, maxDepth) {
         if (position.x < 0 || position.x >= boardWidth || position.y < 0 || position.y >= boardHeight || depth > maxDepth) {
             return 0;
         }
@@ -110,14 +109,21 @@ export default function move(gameState) {
             }
         }
 
+
+        for (const enemyHead of predictedEnemyHeads) {
+            if (position.x === enemyHead.x && position.y === enemyHead.y && depth === 1) {
+                return 0;
+            }
+        }
+
         visited.push(positionKey);
-        let count = 1; 
+        let count = 1;
 
 
-        count = count + countReachableSpaces({ x: position.x, y: position.y + 1 }, visited, allSnakeBodies, depth + 1, maxDepth); // up
-        count = count + countReachableSpaces({ x: position.x, y: position.y - 1 }, visited, allSnakeBodies, depth + 1, maxDepth); // down
-        count = count + countReachableSpaces({ x: position.x - 1, y: position.y }, visited, allSnakeBodies, depth + 1, maxDepth); // left
-        count = count + countReachableSpaces({ x: position.x + 1, y: position.y }, visited, allSnakeBodies, depth + 1, maxDepth); // right
+        count = count + countReachableSpaces({ x: position.x, y: position.y + 1 }, visited, allSnakeBodies, predictedEnemyHeads, depth + 1, maxDepth); // up
+        count = count + countReachableSpaces({ x: position.x, y: position.y - 1 }, visited, allSnakeBodies, predictedEnemyHeads, depth + 1, maxDepth); // down
+        count = count + countReachableSpaces({ x: position.x - 1, y: position.y }, visited, allSnakeBodies, predictedEnemyHeads, depth + 1, maxDepth); // left
+        count = count + countReachableSpaces({ x: position.x + 1, y: position.y }, visited, allSnakeBodies, predictedEnemyHeads, depth + 1, maxDepth); // right
 
         return count;
     }
@@ -136,12 +142,29 @@ export default function move(gameState) {
         }
 
         const allSnakeBodies = [myBody];
+        const predictedEnemyHeads = [];
         for (let i = 0; i < snakes.length; i++) {
             allSnakeBodies.push(snakes[i].body);
+            const enemyHead = snakes[i].body[0];
+            const enemyTail = snakes[i].body[snakes[i].body.length - 1];
+            if (snakes[i].body.length > 1) {
+                const secondToLast = snakes[i].body[snakes[i].body.length - 2];
+                if (enemyTail.x < secondToLast.x) { // Tail was moving right, predict left
+                    predictedEnemyHeads.push({ x: enemyHead.x - 1, y: enemyHead.y });
+                } else if (enemyTail.x > secondToLast.x) { // Tail was moving left, predict right
+                    predictedEnemyHeads.push({ x: enemyHead.x + 1, y: enemyHead.y });
+                } else if (enemyTail.y < secondToLast.y) { // Tail was moving up, predict down
+                    predictedEnemyHeads.push({ x: enemyHead.x, y: enemyHead.y - 1 });
+                } else if (enemyTail.y > secondToLast.y) { // Tail was moving down, predict up
+                    predictedEnemyHeads.push({ x: enemyHead.x, y: enemyHead.y + 1 });
+                }
+            } else if (turn > 0) {
+        
+            }
         }
 
         const visited = [];
-        const reachableSpaces = countReachableSpaces(nextHead[move], visited, allSnakeBodies, 0, 100);
+        const reachableSpaces = countReachableSpaces(nextHead[move], visited, allSnakeBodies, predictedEnemyHeads, 0, 100);
 
 
         return reachableSpaces >= myLength;
@@ -171,14 +194,14 @@ export default function move(gameState) {
         let minDistance = Infinity;
 
         for (let i = 0; i < food.length; i++) {
-            if (
-                food[i].x >= middleMinX &&
-                food[i].x <= middleMaxX &&
-                food[i].y >= middleMinY &&
-                food[i].y <= middleMaxY
-            ) {
-                continue;
-            }
+            // if (
+            //     food[i].x >= middleMinX &&
+            //     food[i].x <= middleMaxX &&
+            //     food[i].y >= middleMinY &&
+            //     food[i].y <= middleMaxY
+            // ) {
+            //     continue;
+            // }
 
             const distance = Math.abs(myHead.x - food[i].x) + Math.abs(myHead.y - food[i].y);
             if (distance < minDistance) {
@@ -207,7 +230,6 @@ export default function move(gameState) {
         }
     }
 
-    // Choose final move, fallback to any safe move
     let finalMove = "down";
     if (moveSafety[nextMove]) {
         finalMove = nextMove;
@@ -227,3 +249,5 @@ export default function move(gameState) {
 
     return { move: finalMove };
 }
+
+//Note: work on food algorithm and target other snake if  mySnake.length > opponentSnake.length
