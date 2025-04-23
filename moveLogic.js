@@ -22,19 +22,16 @@ export default function move(gameState) {
 
     if (myNeckPosition) {
         if (myNeckPosition.x < myHeadPosition.x) {
-            moveSafety.left = false; // Neck is left of head, don't move left
+            moveSafety.left = false;
         } else if (myNeckPosition.x > myHeadPosition.x) {
-            moveSafety.right = false; // Neck is right of head, don't move right
+            moveSafety.right = false;
         } else if (myNeckPosition.y < myHeadPosition.y) {
-            moveSafety.down = false; // Neck is below head, don't move down
+            moveSafety.down = false;
         } else if (myNeckPosition.y > myHeadPosition.y) {
-            moveSafety.up = false; // Neck is above head, don't move up
+            moveSafety.up = false;
         }
     }
 
-    // Step 1 - Prevent your Battlesnake from moving out of bounds
-    // gameState.board contains an object representing the game board including its width and height
-    // https://docs.battlesnake.com/api/objects/board
     if (myHeadPosition.x === 0) {
         moveSafety.left = false;
     }
@@ -48,10 +45,7 @@ export default function move(gameState) {
         moveSafety.up = false;
     }
 
-    // TODO: Step 2 - Prevent your Battlesnake from colliding with itself
-    // gameState.you contains an object representing your snake, including its coordinates
-    // https://docs.battlesnake.com/api/objects/battlesnake
-    for (let i = 1; i < mySnakeBody.length; i++) {
+    for (let i = 0; i < mySnakeBody.length; i++) {
         const bodySegment = mySnakeBody[i];
         if (bodySegment.x === myHeadPosition.x && bodySegment.y === myHeadPosition.y + 1) {
             moveSafety.up = false;
@@ -67,9 +61,6 @@ export default function move(gameState) {
         }
     }
 
-    // TODO: Step 3 - Prevent your Battlesnake from colliding with other Battlesnakes
-    // gameState.board.snakes contains an array of enemy snake objects, which includes their coordinates
-    // https://docs.battlesnake.com/api/objects/battlesnake
     for (let i = 0; i < otherSnakes.length; i++) {
         const otherSnake = otherSnakes[i];
         const otherSnakeBody = otherSnake.body;
@@ -165,6 +156,7 @@ export default function move(gameState) {
             return null;
         }
 
+
         let closestFood = null;
         let minDistance = Infinity;
 
@@ -185,7 +177,7 @@ export default function move(gameState) {
         let minDistance = Infinity;
 
         for (let snake of otherSnakes) {
-            if (snake.body.length + 4 <= mySnakeLength) {
+            if (snake.body.length + 7 <= mySnakeLength) {
                 const enemyHead = snake.body[0];
                 const distance = manhattanDistance(myHeadPosition, enemyHead);
                 if (distance < minDistance) {
@@ -231,24 +223,20 @@ export default function move(gameState) {
 
 
     let gameVerdict = null;
-    let gameOverReason = "";
     if (mySnakeHealth <= 0) {
         gameVerdict = "Loss";
-        gameOverReason = "Starved to death";
     } else if (!Object.values(moveSafety).some(function(safe) {
         return safe;
     })) {
         gameVerdict = "Loss";
-        gameOverReason = "No safe moves available (collision imminent)";
     } else if (otherSnakes.length === 0 && mySnakeHealth > 0) {
         gameVerdict = "Win";
-        gameOverReason = "Last snake standing";
     }
 
 
     let finalMove = "down";
 
-    if (mySnakeLength < 5 || mySnakeHealth < 60) {
+    if (mySnakeLength < 6 || mySnakeHealth < 55) {
         const closestFood = findClosestFood();
         if (closestFood) {
             const foodMove = moveTowards(closestFood);
@@ -268,7 +256,7 @@ export default function move(gameState) {
         }
     }
 
-    if (!moveSafety[finalMove] && (mySnakeLength < 5 || mySnakeHealth < 50)) {
+    if (!moveSafety[finalMove] && (mySnakeLength < 4|| mySnakeHealth < 55)) {
         const closestFood = findClosestFood();
         if (closestFood) {
             const foodMove = moveTowards(closestFood);
@@ -292,3 +280,4 @@ export default function move(gameState) {
 
     return { move: finalMove };
 }
+// work on move safety 
