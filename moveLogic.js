@@ -277,8 +277,8 @@ export default function move(gameState) {
     }
 
     if (!moveSafety[finalMove]) {
-        const safeMoves = Object.keys(moveSafety).filter(function(m) {
-            return moveSafety[m];
+        const safeMoves = Object.keys(moveSafety).filter(function(i) {
+            return moveSafety[i];
         });
         finalMove = safeMoves.length > 0 ? safeMoves[0] : "down";
     }
