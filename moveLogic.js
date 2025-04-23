@@ -185,7 +185,7 @@ export default function move(gameState) {
         let minDistance = Infinity;
 
         for (let snake of otherSnakes) {
-            if (snake.body.length + 3 <= mySnakeLength) {
+            if (snake.body.length + 4 <= mySnakeLength) {
                 const enemyHead = snake.body[0];
                 const distance = manhattanDistance(myHeadPosition, enemyHead);
                 if (distance < minDistance) {
@@ -248,7 +248,7 @@ export default function move(gameState) {
 
     let finalMove = "down";
 
-    if (mySnakeLength < 5 || mySnakeHealth < 50) {
+    if (mySnakeLength < 5 || mySnakeHealth < 60) {
         const closestFood = findClosestFood();
         if (closestFood) {
             const foodMove = moveTowards(closestFood);
