@@ -261,7 +261,7 @@ export default function move(gameState) {
         gameVerdict = "Win";
     }
 
-    const isCenter = (pos) => pos.x > 1 && pos.x < boardWidth - 2 && pos.y > 1 && pos.y < boardHeight - 2;
+    const isCenter = (pos) => pos.x > 0 && pos.x < boardWidth - 1 && pos.y > 0 && pos.y < boardHeight - 1;
     const isCloseToOtherSnakeHead = (pos) => {
         for (const snake of otherSnakes) {
             if (manhattanDistance(pos, snake.body[0]) <= 1) {

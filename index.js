@@ -18,7 +18,7 @@ app.use(express.json());
 const config = {
   apiversion: "1",
   author: "pranav",
-  color: "#FFFFFF.",
+  color: "#b00505",
   head: "bonhomme",
   tail: "nr-booster"
 };
