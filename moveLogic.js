@@ -85,9 +85,7 @@ export default function move(gameState) {
       const snakeBody = allSnakeBodies[i];
       for (let j = 0; j < snakeBody.length; j++) {
         if (position.x === snakeBody[j].x && position.y === snakeBody[j].y) {
-          if (position.x !== tail.x || position.y !== tail.y) {
-            return 0;
-          }
+          return 0; // Never allow head to move onto any body segment
         }
       }
     }
@@ -110,10 +108,8 @@ export default function move(gameState) {
         const snakeBody = allSnakeBodies[i];
         for (let j = 0; j < snakeBody.length; j++) {
           if (move.x === snakeBody[j].x && move.y === snakeBody[j].y) {
-            if (move.x !== tail.x || move.y !== tail.y) {
-              isOccupied = true;
-              break;
-            }
+            isOccupied = true;
+            break;
           }
         }
         if (isOccupied) break;
@@ -243,6 +239,40 @@ export default function move(gameState) {
     return closestTarget;
   }
 
+  function findSafeMoves() {
+    const safeMoves = [];
+    for (const direction in moveSafety) {
+      if (moveSafety.hasOwnProperty(direction) && moveSafety[direction]) {
+        safeMoves.push({ direction: direction, spaces: moveSpaces[direction] });
+      }
+    }
+
+    // Prioritize moves away from larger snakes
+    const largerSnakes = otherSnakes.filter(snake => snake.body.length >= mySnakeLength);
+    if (largerSnakes.length > 0) {
+      const avoidMoves = [];
+      for (let i = 0; i < safeMoves.length; i++) {
+        const move = safeMoves[i];
+        const nextHeadPos = nextHeadPosition[move.direction];
+        let closeToLargeSnake = false;
+        for (let j = 0; j < largerSnakes.length; j++) {
+          const largeSnakeHead = largerSnakes[j].body[0];
+          if (manhattanDistance(nextHeadPos, largeSnakeHead) <= 3) { // Increased proximity to 3
+            closeToLargeSnake = true;
+            break;
+          }
+        }
+        if (!closeToLargeSnake) {
+          avoidMoves.push(move);
+        }
+      }
+      if (avoidMoves.length > 0) {
+        return avoidMoves;
+      }
+    }
+    return safeMoves;
+  }
+
   function moveTowards(target) {
     const possibleMoves = [];
 
@@ -361,6 +391,7 @@ export default function move(gameState) {
   const largerSnakes = otherSnakes.filter(snake => snake.body.length >= mySnakeLength);
   const closestFood = findClosestFood();
   const aggressiveLength = 5;
+  const passiveHealthThreshold = 80; // Increased health threshold for passive behavior
 
   if (mySnakeLength < aggressiveLength) {
     if (closestFood) {
@@ -382,7 +413,7 @@ export default function move(gameState) {
     }
   }
 
-  if (!finalMove && mySnakeHealth >= 60 && mySnakeLength >= 5 && smallestSnake) {
+  if (!finalMove && mySnakeHealth >= passiveHealthThreshold && mySnakeLength >= 5 && smallestSnake) { // Use the increased threshold
     const nextHeadPositions = {
       up: { x: myHeadPosition.x, y: myHeadPosition.y + 1 },
       down: { x: myHeadPosition.x, y: myHeadPosition.y - 1 },
@@ -454,12 +485,7 @@ export default function move(gameState) {
   }
 
   if (!finalMove || !moveSafety[finalMove]) {
-    const safeMoves = [];
-    for (const direction in moveSafety) {
-      if (moveSafety.hasOwnProperty(direction) && moveSafety[direction]) {
-        safeMoves.push({ direction: direction, spaces: moveSpaces[direction] });
-      }
-    }
+    const safeMoves = findSafeMoves();
     if (safeMoves.length > 0) {
       safeMoves.sort(function (a, b) { return b.spaces - a.spaces; });
       finalMove = safeMoves[0].direction;
@@ -490,12 +516,7 @@ export default function move(gameState) {
   }
 
   if (!finalMove || !moveSafety[finalMove]) {
-    const safeMoves = [];
-    for (const direction in moveSafety) {
-      if (moveSafety.hasOwnProperty(direction) && moveSafety[direction]) {
-        safeMoves.push({ direction: direction, spaces: moveSpaces[direction] });
-      }
-    }
+    const safeMoves = findSafeMoves();
     if (safeMoves.length > 0) {
       safeMoves.sort(function (a, b) { return b.spaces - a.spaces; });
       finalMove = safeMoves[0].direction;
