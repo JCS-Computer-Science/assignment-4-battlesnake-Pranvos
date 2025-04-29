@@ -180,10 +180,10 @@ export default function move(gameState) {
     return moveSafety[move];
   }
 
-  moveSafety.up = moveSafety.up && isSafeMove("up", mySnakeLength < 3 || mySnakeHealth < 60);
-  moveSafety.down = moveSafety.down && isSafeMove("down", mySnakeLength < 3 || mySnakeHealth < 60);
-  moveSafety.left = moveSafety.left && isSafeMove("left", mySnakeLength < 3 || mySnakeHealth < 60);
-  moveSafety.right = moveSafety.right && isSafeMove("right", mySnakeLength < 3 || mySnakeHealth < 60);
+  moveSafety.up = moveSafety.up && isSafeMove("up", mySnakeLength < 1 || mySnakeHealth < 60);
+  moveSafety.down = moveSafety.down && isSafeMove("down", mySnakeLength < 1 || mySnakeHealth < 60);
+  moveSafety.left = moveSafety.left && isSafeMove("left", mySnakeLength < 1 || mySnakeHealth < 60);
+  moveSafety.right = moveSafety.right && isSafeMove("right", mySnakeLength < 1 || mySnakeHealth < 60);
 
   function findClosestFood() {
     if (!foodLocations || foodLocations.length === 0) {
@@ -206,7 +206,7 @@ export default function move(gameState) {
   function findSmallestNearbySnake() {
     let smallestSnake = null;
     let minLength = Infinity;
-    const proximity = 3;
+    const proximity = 5;
 
     for (let i = 0; i < otherSnakes.length; i++) {
       const snake = otherSnakes[i];
