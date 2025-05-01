@@ -48,7 +48,7 @@ export default function move(gameState) {
     }
 
     // Check for potential head-to-head collisions
-    if (snake['body']['length'] >= mySnakeLength) { 
+    if (snake['body']['length'] >= mySnakeLength) {
       const otherHeadX = snake['body'][0]['x'];
       const otherHeadY = snake['body'][0]['y'];
 
@@ -61,7 +61,7 @@ export default function move(gameState) {
 
   // Avoid hazards 
   for (const hazard of hazards) {
-    if (mySnakeHealth > 50) { 
+    if (mySnakeHealth > 50) {
       if (hazard['x'] === myHeadPosition['x'] + 1 && hazard['y'] === myHeadPosition['y']) moveSafety['right'] = false;
       else if (hazard['x'] === myHeadPosition['x'] - 1 && hazard['y'] === myHeadPosition['y']) moveSafety['left'] = false;
       else if (hazard['x'] === myHeadPosition['x'] && hazard['y'] === myHeadPosition['y'] + 1) moveSafety['up'] = false;
@@ -74,7 +74,7 @@ export default function move(gameState) {
     ['map'](([direction]) => direction);
 
   if (safeMoves['length'] === 0) {
-    // If no safe moves, try to move towards the center
+    //If no safe moves, try to move towards the center
     const center_x = Math['floor'](boardWidth / 2);
     const center_y = Math['floor'](boardHeight / 2);
     if (myHeadPosition['x'] < center_x && moveSafety['right']) return { move: 'right' };
@@ -90,7 +90,7 @@ export default function move(gameState) {
         return { move: move };
       }
     }
-    return { move: 'down' }; // Default to down, even if potentially unsafe
+    return { move: 'down' }; // 
   }
 
   function calculateDistance(pos1, pos2) {
@@ -170,12 +170,10 @@ export default function move(gameState) {
     const moves = [];
     const allSnakes = [];
 
-    // Add your snake
-    allSnakes['push']({ 'body': gameState['you']['body'] });
-    // Add other snakes
-    for (let i = 0; i < otherSnakes['length']; i++) {
-      allSnakes['push'](otherSnakes[i]);
-    }
+    // my snake
+    allSnakes['push']({ body: gameState['you']['body'] });
+    //  other snakes
+    allSnakes['push'](...otherSnakes);
 
     if (head['x'] > 0 && !isOccupied({ x: head['x'] - 1, y: head['y'] }, allSnakes, hazards)) {
       moves['push']({ direction: 'left', x: head['x'] - 1, y: head['y'] });
@@ -222,7 +220,7 @@ export default function move(gameState) {
       { x: 0 - expansionAmount, y: myHeadPosition['y'] },
       { x: boardWidth - 1 + expansionAmount, y: myHeadPosition['y'] },
       { x: myHeadPosition['x'], y: 0 - expansionAmount },
-      { x: myHeadPosition['x'], y: boardHeight - 1 + expansionAmount }
+      { x: myHeadPosition['x'], y: boardHeight - 1 + expansionAmount },
     );
   }
   //add current hazards
@@ -267,7 +265,7 @@ export default function move(gameState) {
   let bestMove = null;
   let maxSpaces = -1;
   let foodDistance = Infinity; 
-  const aggressiveFoodFactor = 0.7; // Higher value = more aggressive
+  const aggressiveFoodFactor = 3; // Higher value = more aggressive
 
   for (const move of possibleMoves) {
     const nextHead = { ...myHeadPosition };
@@ -289,7 +287,7 @@ export default function move(gameState) {
     const spaces = countAvailableSpaces({ x: nextHead['x'], y: nextHead['y'] }, boardWidth, boardHeight, [{ body: gameState['you']['body'] }, ...otherSnakes], futureHazards);
     let isTrapping = false;
     let isRiskyFood = false;
-    let isHeadToHead = false; //track head to head
+    let isHeadToHead = false; 
 
     for (const otherSnake of otherSnakes) {
       if (otherSnake['body']['length'] >= mySnakeLength) {
@@ -343,8 +341,7 @@ export default function move(gameState) {
       }
     }
 
-
-    if (spaces > maxSpaces && !isTrapping && (!isRiskyFood || mySnakeHealth > 60) && !isHeadToHead) { 
+    if (spaces > maxSpaces && !isTrapping && (!isRiskyFood || mySnakeHealth > 60) && !isHeadToHead) {
       maxSpaces = spaces;
       bestMove = move['direction'];
       foodDistance = currentFoodDistance;
@@ -352,6 +349,7 @@ export default function move(gameState) {
       bestMove = move['direction'];
       foodDistance = currentFoodDistance;
     } else if (mySnakeHealth < 20 && currentFoodDistance < 3 && !isHeadToHead) { 
+      bestMove = move['direction'];
       foodDistance = currentFoodDistance;
     }
   }
@@ -360,29 +358,23 @@ export default function move(gameState) {
     return { move: bestMove };
   }
 
-
-  if (safeMoves['length'] > 0) {
+  if (safeMoves.length > 0) {
     return { move: safeMoves[0] };
   }
 
+  //move down if nothing else is safe
   return { move: 'down' };
 }
 
 export function getGameVerdict(gameState) {
   const mySnake = gameState['you'];
   const otherSnakes = gameState['board']['snakes']['filter'](snake => snake['id'] !== mySnake['id']);
-  const turn = gameState['turn'];
-
-  let deathReason = "unknown"; 
 
   if (mySnake['health'] <= 0) {
-    deathReason = "starvation/storm";
-    console['log'](`Game Over: Loss on turn ${turn}. Died due to ${deathReason}.`);
     return "loss";
   }
 
   if (otherSnakes['length'] === 0) {
-    console['log'](`Game Over: Win on turn ${turn}!`);
     return "win";
   }
 
@@ -393,14 +385,11 @@ export function getGameVerdict(gameState) {
     }
   }
   if (otherSnakesAlive === 0) {
-    console['log'](`Game Over: Win on turn ${turn}!`);
     return "win";
   }
 
   if (mySnake['body']['length'] === 0) {
-    deathReason = "no body";
-    console['log'](`Game Over: Loss on turn ${turn}. Died due to ${deathReason}.`);
-    return "loss";
+    return "loss"
   }
 
   // Check if the snake is trapped
@@ -431,7 +420,7 @@ export function getGameVerdict(gameState) {
           !isOccupied(nextPosition, allSnakeBodies, hazards) &&
           !visited['has'](`${nextPosition['x']},${nextPosition['y']}`)
         ) {
-          return false; 
+          return false;
         }
       }
     }
@@ -440,8 +429,6 @@ export function getGameVerdict(gameState) {
 
   const allSnakeBodies = [mySnake, ...otherSnakes];
   if (isTrapped(mySnake['body'][0], boardWidth, boardHeight, allSnakeBodies, hazards)) {
-    deathReason = "trapped";
-    console['log'](`Game Over: Loss on turn ${turn}. Died because it was ${deathReason}.`);
     return "loss";
   }
 
