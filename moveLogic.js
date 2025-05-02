@@ -59,7 +59,7 @@ export default function move(gameState) {
     }
   }
 
-  // Avoid hazards 
+  // Avoid hazards
   for (const hazard of hazards) {
     if (mySnakeHealth > 50) {
       if (hazard['x'] === myHeadPosition['x'] + 1 && hazard['y'] === myHeadPosition['y']) moveSafety['right'] = false;
@@ -90,7 +90,7 @@ export default function move(gameState) {
         return { move: move };
       }
     }
-    return { move: 'down' }; // 
+    return { move: 'down' }; //
   }
 
   function calculateDistance(pos1, pos2) {
@@ -131,7 +131,8 @@ export default function move(gameState) {
         { x: current['x'] + 1, y: current['y'] }
       ];
 
-      for (const nextPosition of adjacentPositions) {
+      for (let i = 0; i < adjacentPositions.length; i++) { //changed from const nextPosition of adjacentPositions
+        const nextPosition = adjacentPositions[i];
         if (
           nextPosition['x'] >= 0 &&
           nextPosition['x'] < boardWidth &&
@@ -158,7 +159,8 @@ export default function move(gameState) {
         }
       }
     }
-    for (const hazard of hazards) {
+    for (let hazardIndex = 0; hazardIndex < hazards.length; hazardIndex++) { //changed from const hazard of hazards
+      const hazard = hazards[hazardIndex];
       if (hazard['x'] === position['x'] && hazard['y'] === position['y']) {
         return true;
       }
@@ -171,9 +173,11 @@ export default function move(gameState) {
     const allSnakes = [];
 
     // my snake
-    allSnakes['push']({ body: gameState['you']['body'] });
-    //  other snakes
-    allSnakes['push'](...otherSnakes);
+    allSnakes.push({ body: gameState['you']['body'] });
+    //  other snakes
+    for (let i = 0; i < otherSnakes.length; i++) { //changed from allSnakes['push'](...otherSnakes);
+      allSnakes.push(otherSnakes[i]);
+    }
 
     if (head['x'] > 0 && !isOccupied({ x: head['x'] - 1, y: head['y'] }, allSnakes, hazards)) {
       moves['push']({ direction: 'left', x: head['x'] - 1, y: head['y'] });
@@ -216,7 +220,7 @@ export default function move(gameState) {
   // Predict future hazard locations
   if (turnsUntilNextHazard <= 3) {
     const expansionAmount = 1;
-    futureHazards['push'](
+    futureHazards.push(
       { x: 0 - expansionAmount, y: myHeadPosition['y'] },
       { x: boardWidth - 1 + expansionAmount, y: myHeadPosition['y'] },
       { x: myHeadPosition['x'], y: 0 - expansionAmount },
@@ -224,8 +228,9 @@ export default function move(gameState) {
     );
   }
   //add current hazards
-  for (const hazard of hazards) {
-    futureHazards['push'](hazard);
+  for (let i = 0; i < hazards.length; i++) { //changed from  for (const hazard of hazards)
+    const hazard = hazards[i];
+    futureHazards.push(hazard);
   }
 
   // Prioritize food when health is low or snake is short
@@ -243,7 +248,8 @@ export default function move(gameState) {
 
       if (targetDirection) {
         let foodIsSafe = true;
-        for (const otherSnake of otherSnakes) {
+        for (let i = 0; i < otherSnakes.length; i++) { //changed from for (const otherSnake of otherSnakes)
+          const otherSnake = otherSnakes[i];
           if (otherSnake['body']['length'] >= mySnakeLength || otherSnake['body']['length'] + 1 > mySnakeLength) {
             const otherSnakeHead = otherSnake['body'][0];
             const myDistanceToFood = calculateDistance(myHeadPosition, closestFood);
@@ -264,10 +270,11 @@ export default function move(gameState) {
   const possibleMoves = getPossibleMoves(myHeadPosition, boardWidth, boardHeight, [{ body: gameState['you']['body'] }, ...otherSnakes], futureHazards);
   let bestMove = null;
   let maxSpaces = -1;
-  let foodDistance = Infinity; 
+  let foodDistance = Infinity;
   const aggressiveFoodFactor = 3; // Higher value = more aggressive
 
-  for (const move of possibleMoves) {
+  for (let i = 0; i < possibleMoves.length; i++) { //changed from for (const move of possibleMoves)
+    const move = possibleMoves[i];
     const nextHead = { ...myHeadPosition };
     switch (move['direction']) {
       case 'up':
@@ -287,9 +294,10 @@ export default function move(gameState) {
     const spaces = countAvailableSpaces({ x: nextHead['x'], y: nextHead['y'] }, boardWidth, boardHeight, [{ body: gameState['you']['body'] }, ...otherSnakes], futureHazards);
     let isTrapping = false;
     let isRiskyFood = false;
-    let isHeadToHead = false; 
+    let isHeadToHead = false;
 
-    for (const otherSnake of otherSnakes) {
+    for (let j = 0; j < otherSnakes.length; j++) { //changed from  for (const otherSnake of otherSnakes)
+      const otherSnake = otherSnakes[j];
       if (otherSnake['body']['length'] >= mySnakeLength) {
         const otherHeadX = otherSnake['body'][0]['x'];
         const otherHeadY = otherSnake['body'][0]['y'];
@@ -308,9 +316,10 @@ export default function move(gameState) {
       const nearestFood = findNearestFood(nextHead, foodLocations);
       if (nearestFood) {
         const distanceToFood = calculateDistance(nextHead, nearestFood);
-        for (const otherSnake of otherSnakes) {
-          if (otherSnake['body']['length'] >= mySnakeLength) {
-            const otherSnakeHead = otherSnake['body'][0];
+        for (let k = 0; k < otherSnakes.length; k++) { //changed from  for (const otherSnake of otherSnakes)
+          const otherSnake2 = otherSnakes[k];
+          if (otherSnake2['body']['length'] >= mySnakeLength) {
+            const otherSnakeHead = otherSnake2['body'][0];
             const otherSnakeDistanceToFood = calculateDistance(otherSnakeHead, nearestFood);
             if (otherSnakeDistanceToFood < distanceToFood) {
               isRiskyFood = true;
@@ -321,9 +330,10 @@ export default function move(gameState) {
       }
     }
 
-    for (const otherSnake of otherSnakes) {
-      if (otherSnake['body']['length'] < mySnakeLength) {
-        const otherSnakeHead = otherSnake['body'][0];
+    for (let l = 0; l < otherSnakes.length; l++) { //changed from  for (const otherSnake of otherSnakes)
+      const otherSnake3 = otherSnakes[l];
+      if (otherSnake3['body']['length'] < mySnakeLength) {
+        const otherSnakeHead = otherSnake3['body'][0];
         const otherSnakePossibleMoves = getPossibleMoves(otherSnakeHead, boardWidth, boardHeight, [{ body: gameState['you']['body'] }, ...otherSnakes], futureHazards);
         if (otherSnakePossibleMoves['length'] === 0) {
           isTrapping = true;
@@ -345,10 +355,10 @@ export default function move(gameState) {
       maxSpaces = spaces;
       bestMove = move['direction'];
       foodDistance = currentFoodDistance;
-    } else if (spaces === maxSpaces && !isTrapping && currentFoodDistance < foodDistance * aggressiveFoodFactor && !isHeadToHead) { 
+    } else if (spaces === maxSpaces && !isTrapping && currentFoodDistance < foodDistance * aggressiveFoodFactor && !isHeadToHead) {
       bestMove = move['direction'];
       foodDistance = currentFoodDistance;
-    } else if (mySnakeHealth < 20 && currentFoodDistance < 3 && !isHeadToHead) { 
+    } else if (mySnakeHealth < 20 && currentFoodDistance < 3 && !isHeadToHead) {
       bestMove = move['direction'];
       foodDistance = currentFoodDistance;
     }
@@ -379,7 +389,8 @@ export function getGameVerdict(gameState) {
   }
 
   let otherSnakesAlive = 0;
-  for (const snake of otherSnakes) {
+  for (let i = 0; i < otherSnakes.length; i++) { //changed from  for (const snake of otherSnakes)
+    const snake = otherSnakes[i];
     if (snake['health'] > 0) {
       otherSnakesAlive++;
     }
@@ -411,7 +422,8 @@ export function getGameVerdict(gameState) {
         { x: current['x'] + 1, y: current['y'] }
       ];
 
-      for (const nextPosition of adjacentPositions) {
+      for (let i = 0; i < adjacentPositions.length; i++) { //changed from const nextPosition of adjacentPositions
+        const nextPosition = adjacentPositions[i];
         if (
           nextPosition['x'] >= 0 &&
           nextPosition['x'] < boardWidth &&
@@ -424,10 +436,13 @@ export function getGameVerdict(gameState) {
         }
       }
     }
-    return true; 
+    return true;
   }
 
-  const allSnakeBodies = [mySnake, ...otherSnakes];
+  const allSnakeBodies = [mySnake]; //changed from const allSnakeBodies = [mySnake, ...otherSnakes];
+  for (let i = 0; i < otherSnakes.length; i++){
+    allSnakeBodies.push(otherSnakes[i]);
+  }
   if (isTrapped(mySnake['body'][0], boardWidth, boardHeight, allSnakeBodies, hazards)) {
     return "loss";
   }
