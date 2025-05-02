@@ -61,7 +61,7 @@ export default function move(gameState) {
 
   // Avoid hazards
   for (const hazard of hazards) {
-    if (mySnakeHealth > 50) {
+    if (mySnakeHealth > 80) {
       if (hazard['x'] === myHeadPosition['x'] + 1 && hazard['y'] === myHeadPosition['y']) moveSafety['right'] = false;
       else if (hazard['x'] === myHeadPosition['x'] - 1 && hazard['y'] === myHeadPosition['y']) moveSafety['left'] = false;
       else if (hazard['x'] === myHeadPosition['x'] && hazard['y'] === myHeadPosition['y'] + 1) moveSafety['up'] = false;
@@ -90,7 +90,7 @@ export default function move(gameState) {
         return { move: move };
       }
     }
-    return { move: 'down' }; //
+    return { move: 'down' }; 
   }
 
   function calculateDistance(pos1, pos2) {
