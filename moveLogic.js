@@ -273,8 +273,10 @@ export default function move(gameState) {
   const attackSpaceThreshold = 5; // Min accessible spaces for attack
   let hazardFoodMove = null; // Store move towards food in hazard, if any
   let minHazardFoodDistance = Infinity;
-  const desperateHealth = 15; // Health level to trigger desperate mode
+  const desperateHealth = 20; // Health level to trigger desperate mode. Increased slightly.
   const opponentFoodFactor = 2; //How much closer an opponent needs to be to food to be a threat.
+  const immediateDangerHealth = 5; // Health when death is very close.
+  const maxHazardDistanceForSurvival = 3; // Max distance to hazard food for survival check
 
   for (const move of possibleMoves) {
     const nextHead = { ...myHeadPosition };
@@ -301,10 +303,12 @@ export default function move(gameState) {
     let targetSnake = null;
     let targetMove = null;
     let isHazard = false;
+    let hazardDistance = Infinity;
 
     for (const hazard of hazards) {
       if (nextHead['x'] === hazard['x'] && nextHead['y'] === hazard['y']) {
         isHazard = true;
+        hazardDistance = calculateDistance(nextHead, hazard); // Calculate distance to hazard
         break;
       }
     }
@@ -318,7 +322,7 @@ export default function move(gameState) {
           (nextHead['x'] === otherHeadX + 1 && nextHead['y'] === otherHeadY) ||
           (nextHead['x'] === otherHeadX - 1 && nextHead['y'] === otherHeadY) ||
           (nextHead['x'] === otherHeadX && nextHead['y'] === otherHeadY + 1) ||
-          (nextHead['x'] === otherHeadX && nextHead['y'] === otherHeadY - 1)
+          (nextHead['x'] === otherHeadX && otherHeadY === otherHeadY - 1)
         ) {
           isHeadToHead = true;
           break;
@@ -402,6 +406,26 @@ export default function move(gameState) {
         }
       }
       return { move: move['direction'] };
+    }
+
+    // Prioritize food and survival
+    if (foodLocations.length > 0 && mySnakeHealth < desperateHealth) {
+      const nearestFood = findNearestFood(nextHead, foodLocations);
+      if (nearestFood) {
+        const distanceToFood = calculateDistance(nextHead, nearestFood);
+        if (!isHazard || (isHazard && distanceToFood <= maxHazardDistanceForSurvival)) {
+          // Check if the snake can reach food and get back to safety
+          const futureHead = { x: nextHead['x'], y: nextHead['y'] };
+          const turnsToFood = distanceToFood;
+          const safeHealthAfterEating = mySnakeHealth - (turnsToFood * stormDamage) + 10; // +10 for eating
+          const turnsToSafety = 0; // Simplified: Assume 0 turns to safety after eating.
+          const safeHealthAfterReturn = safeHealthAfterEating - (turnsToSafety * stormDamage);
+
+          if (safeHealthAfterReturn > immediateDangerHealth) {
+            return { move: move['direction'] };
+          }
+        }
+      }
     }
 
     if (spaces > maxSpaces && !isTrapping && (!isRiskyFood || mySnakeHealth > 60) && !isHeadToHead && !isHazard) {
@@ -505,3 +529,4 @@ export function getGameVerdict(gameState) {
 
   return "ongoing";
 }
+
