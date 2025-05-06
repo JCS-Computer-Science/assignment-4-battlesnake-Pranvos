@@ -273,6 +273,8 @@ export default function move(gameState) {
   const attackSpaceThreshold = 5; // Min accessible spaces for attack
   let hazardFoodMove = null; // Store move towards food in hazard, if any
   let minHazardFoodDistance = Infinity;
+  const desperateHealth = 15; // Health level to trigger desperate mode
+  const opponentFoodFactor = 2; //How much closer an opponent needs to be to food to be a threat.
 
   for (const move of possibleMoves) {
     const nextHead = { ...myHeadPosition };
@@ -338,20 +340,34 @@ export default function move(gameState) {
       const nearestFood = findNearestFood(nextHead, foodLocations);
       if (nearestFood) {
         const distanceToFood = calculateDistance(nextHead, nearestFood);
+        let opponentThreatened = false;
         for (let i = 0; i < otherSnakes.length; i++) {
           const otherSnake = otherSnakes[i];
           if (otherSnake['body']['length'] >= mySnakeLength) {
             const otherSnakeHead = otherSnake['body'][0];
             const otherSnakeDistanceToFood = calculateDistance(otherSnakeHead, nearestFood);
-            if (otherSnakeDistanceToFood < distanceToFood) {
-              isRiskyFood = true;
+            if (otherSnakeDistanceToFood < distanceToFood * opponentFoodFactor) {
+              opponentThreatened = true;
               break;
             }
           }
         }
-        if (isHazard && distanceToFood < minHazardFoodDistance) {
+        if (isHazard && distanceToFood < minHazardFoodDistance && mySnakeHealth < desperateHealth && !opponentThreatened) {
           minHazardFoodDistance = distanceToFood;
           hazardFoodMove = move['direction'];
+        }
+        if (!isHazard) {
+          for (let i = 0; i < otherSnakes.length; i++) {
+            const otherSnake = otherSnakes[i];
+            if (otherSnake['body']['length'] >= mySnakeLength) {
+              const otherSnakeHead = otherSnake['body'][0];
+              const otherSnakeDistanceToFood = calculateDistance(otherSnakeHead, nearestFood);
+              if (otherSnakeDistanceToFood < distanceToFood) {
+                isRiskyFood = true;
+                break;
+              }
+            }
+          }
         }
       }
     }
@@ -489,4 +505,3 @@ export function getGameVerdict(gameState) {
 
   return "ongoing";
 }
-
