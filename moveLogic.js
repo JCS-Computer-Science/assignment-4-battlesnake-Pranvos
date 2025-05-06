@@ -11,7 +11,7 @@ export default function move(gameState) {
   const hazards = gameState.board.hazards || [];
   const stormDamage = gameState.board.damagePerTurn || 0;
   const turn = gameState.turn;
-  const HAZARD_DAMAGE = 14; // Typical BattleSnake hazard damage per turn
+  const HAZARD_DAMAGE = 14; 
 
   // Apply storm damage
   if (stormDamage > 0) {
@@ -34,7 +34,7 @@ export default function move(gameState) {
 
   // Hazard avoidance with stricter health threshold
   for (const hazard of hazards) {
-    if (mySnakeHealth > 70) { // Only avoid hazards if health is high
+    if (mySnakeHealth > 80) { // Only avoid hazards if health is high
       if (hazard.x === myHeadPosition.x + 1 && hazard.y === myHeadPosition.y) moveSafety.right = false;
       if (hazard.x === myHeadPosition.x - 1 && hazard.y === myHeadPosition.y) moveSafety.left = false;
       if (hazard.x === myHeadPosition.x && hazard.y === myHeadPosition.y + 1) moveSafety.up = false;
@@ -80,7 +80,7 @@ export default function move(gameState) {
   }
 
   function countAvailableSpaces(position, boardWidth, boardHeight, allSnakeBodies, hazards, willEat, health, depth = 0) {
-    const maxDepth = 10; // Limit recursion depth
+    const maxDepth = 8; 
     if (depth > maxDepth || health <= 0) return 0;
 
     let count = 0;
@@ -396,7 +396,7 @@ export default function move(gameState) {
     return { move: safeMoves[0] };
   }
 
-  return { move: 'down' };
+  // return { move: 'down' };
 }
 
 export function getGameVerdict(gameState) {
