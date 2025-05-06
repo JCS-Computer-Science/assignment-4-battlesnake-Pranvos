@@ -490,4 +490,3 @@ export function getGameVerdict(gameState) {
   return "ongoing";
 }
 
-  
