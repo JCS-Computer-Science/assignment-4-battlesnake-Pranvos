@@ -11,7 +11,7 @@ export default function move(gameState) {
   const hazards = gameState.board.hazards || [];
   const stormDamage = gameState.board.damagePerTurn || 0;
   const turn = gameState.turn;
-  const HAZARD_DAMAGE = 14; 
+  const HAZARD_DAMAGE = 14;
 
   // Apply storm damage
   if (stormDamage > 0) {
@@ -80,7 +80,7 @@ export default function move(gameState) {
   }
 
   function countAvailableSpaces(position, boardWidth, boardHeight, allSnakeBodies, hazards, willEat, health, depth = 0) {
-    const maxDepth = 8; 
+    const maxDepth = 8;
     if (depth > maxDepth || health <= 0) return 0;
 
     let count = 0;
@@ -176,10 +176,11 @@ export default function move(gameState) {
       ) {
         // Additional self-collision check
         let willSelfCollide = false;
+        const nextHead = { x: move.x, y: move.y };
         for (let i = 1; i < mySnakeLength; i++) {
           const segment = mySnakeBody[i];
           if (i === mySnakeLength - 1 && !willEat) continue;
-          if (segment.x === move.x && segment.y === move.y) {
+          if (segment.x === nextHead.x && segment.y === nextHead.y) {
             willSelfCollide = true;
             break;
           }
