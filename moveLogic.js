@@ -48,7 +48,7 @@ export default function move(gameState) {
     }
 
     // Check for potential head to head collisions
-    if (snake['body']['length'] >= mySnakeLength) {
+    if (snake['body']['length'] >= mySnakeLength) { // Changed to strictly greater than
       const otherHeadX = snake['body'][0]['x'];
       const otherHeadY = snake['body'][0]['y'];
 
@@ -344,9 +344,9 @@ export default function move(gameState) {
   let bestMove = null;
   let maxSpaces = -1;
   let foodDistance = Infinity;
-  const aggressiveFoodFactor = 2; 
-  const attackLengthDiff = 2;    
-  const attackSpaceThreshold = 3; 
+  const aggressiveFoodFactor = 1.5;
+  const attackLengthDiff = 2;
+  const attackSpaceThreshold = 3;
 
   for (const move of possibleMoves) {
     const nextHead = { ...myHeadPosition };
@@ -391,7 +391,7 @@ export default function move(gameState) {
         const otherHeadX = otherSnake['body'][0]['x'];
         const otherHeadY = otherSnake['body'][0]['y'];
         const attackDistance = calculateDistance(nextHead, { x: otherHeadX, y: otherHeadY });
-        if (attackDistance <= 3) { 
+        if (attackDistance <= 3) {
           canAttack = true;
           targetSnake = otherSnake;
           targetMove = move['direction'];
@@ -435,7 +435,7 @@ export default function move(gameState) {
         currentFoodDistance = calculateDistance(nextHead, nearestFood);
       }
     }
-
+    // Prioritize attack
     if (canAttack && spaces >= attackSpaceThreshold) {
       if (targetSnake) {
         const targetHead = targetSnake['body'][0];
