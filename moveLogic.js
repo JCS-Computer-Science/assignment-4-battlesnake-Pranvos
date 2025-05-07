@@ -38,7 +38,7 @@ export default function move(gameState) {
   for (const snake of otherSnakes) {
     for (const segment of snake.body) {
       if (segment.x === myHeadPosition.x + 1 && segment.y === myHeadPosition.y) moveSafety.right = false;
-      else if (segment.x === myHeadPosition.x - 1 && segment.y === sentada.y) moveSafety.left = false;
+      else if (segment.x === myHeadPosition.x - 1 && segment.y === myHeadPosition.y) moveSafety.left = false;
       else if (segment.x === myHeadPosition.x && segment.y === myHeadPosition.y + 1) moveSafety.up = false;
       else if (segment.x === myHeadPosition.x && segment.y === myHeadPosition.y - 1) moveSafety.down = false;
     }
