@@ -217,8 +217,48 @@ export default function move(gameState) {
     futureHazards['push'](hazard);
   }
 
-  // Prioritize food when health is low or snake is short
-  if (foodLocations['length'] > 0 && (mySnakeHealth < 50 || mySnakeLength < 5)) {
+  // Aggressive hunting logic for other snakes
+  if (mySnakeHealth > 30 && mySnakeLength > 3) {
+    let closestSnake = null;
+    let minDistance = Infinity;
+    for (const snake of otherSnakes) {
+      if (snake['body']['length'] < mySnakeLength) {
+        const distance = calculateDistance(myHeadPosition, snake['body'][0]);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestSnake = snake;
+        }
+      }
+    }
+    if (closestSnake && minDistance <= 4) {
+      const targetHead = closestSnake['body'][0];
+      const dx = targetHead['x'] - myHeadPosition['x'];
+      const dy = targetHead['y'] - myHeadPosition['y'];
+      let targetDirection;
+
+      if (dx > 0 && moveSafety['right']) targetDirection = 'right';
+      else if (dx < 0 && moveSafety['left']) targetDirection = 'left';
+      else if (dy > 0 && moveSafety['up']) targetDirection = 'up';
+      else if (dy < 0 && moveSafety['down']) targetDirection = 'down';
+
+      if (targetDirection) {
+        const nextHead = { ...myHeadPosition };
+        switch (targetDirection) {
+          case 'up': nextHead['y']++; break;
+          case 'down': nextHead['y']--; break;
+          case 'left': nextHead['x']--; break;
+          case 'right': nextHead['x']++; break;
+        }
+        const spaces = getAccessibleSpaces(nextHead, boardWidth, boardHeight, [{ body: gameState['you']['body'] }, ...otherSnakes], futureHazards);
+        if (spaces >= 3) {
+          return { move: targetDirection };
+        }
+      }
+    }
+  }
+
+  // Prioritize food aggressively when health is moderate or snake is short
+  if (foodLocations['length'] > 0 && (mySnakeHealth < 70 || mySnakeLength < 7)) {
     let closestFood = findNearestFood(myHeadPosition, foodLocations);
     if (closestFood) {
       const dx = closestFood['x'] - myHeadPosition['x'];
@@ -233,11 +273,11 @@ export default function move(gameState) {
       if (targetDirection) {
         let foodIsSafe = true;
         for (const otherSnake of otherSnakes) {
-          if (otherSnake['body']['length'] >= mySnakeLength || otherSnake['body']['length'] + 1 > mySnakeLength) {
+          if (otherSnake['body']['length'] >= mySnakeLength) {
             const otherSnakeHead = otherSnake['body'][0];
             const myDistanceToFood = calculateDistance(myHeadPosition, closestFood);
             const otherSnakeDistanceToFood = calculateDistance(otherSnakeHead, closestFood);
-            if (otherSnakeDistanceToFood < myDistanceToFood) {
+            if (otherSnakeDistanceToFood <= myDistanceToFood) {
               foodIsSafe = false;
               break;
             }
@@ -283,11 +323,11 @@ export default function move(gameState) {
       if (targetDirection) {
         let foodIsSafe = true;
         for (const otherSnake of otherSnakes) {
-          if (otherSnake['body']['length'] >= mySnakeLength || otherSnake['body']['length'] + 1 > mySnakeLength) {
+          if (otherSnake['body']['length'] >= mySnakeLength) {
             const otherSnakeHead = otherSnake['body'][0];
             const myDistanceToFood = calculateDistance(myHeadPosition, closestFood);
             const otherSnakeDistanceToFood = calculateDistance(otherSnakeHead, closestFood);
-            if (otherSnakeDistanceToFood < myDistanceToFood) {
+            if (otherSnakeDistanceToFood <= myDistanceToFood) {
               foodIsSafe = false;
               break;
             }
@@ -304,9 +344,9 @@ export default function move(gameState) {
   let bestMove = null;
   let maxSpaces = -1;
   let foodDistance = Infinity;
-  const aggressiveFoodFactor = 3; // Higher value = more aggressive
-  const attackLengthDiff = 3;    // Min length difference to attack
-  const attackSpaceThreshold = 5; // Min accessible spaces for attack
+  const aggressiveFoodFactor = 2; // Lower value for more aggressive food pursuit
+  const attackLengthDiff = 2;    // Lowered for more aggressive hunting
+  const attackSpaceThreshold = 3; // Lowered for more aggressive attacks
 
   for (const move of possibleMoves) {
     const nextHead = { ...myHeadPosition };
@@ -351,7 +391,7 @@ export default function move(gameState) {
         const otherHeadX = otherSnake['body'][0]['x'];
         const otherHeadY = otherSnake['body'][0]['y'];
         const attackDistance = calculateDistance(nextHead, { x: otherHeadX, y: otherHeadY });
-        if (attackDistance <= 2) { // Only attack if close
+        if (attackDistance <= 3) { // Extended range for more aggressive hunting
           canAttack = true;
           targetSnake = otherSnake;
           targetMove = move['direction'];
@@ -367,7 +407,7 @@ export default function move(gameState) {
           if (otherSnake['body']['length'] >= mySnakeLength) {
             const otherSnakeHead = otherSnake['body'][0];
             const otherSnakeDistanceToFood = calculateDistance(otherSnakeHead, nearestFood);
-            if (otherSnakeDistanceToFood < distanceToFood) {
+            if (otherSnakeDistanceToFood <= distanceToFood) {
               isRiskyFood = true;
               break;
             }
@@ -407,14 +447,14 @@ export default function move(gameState) {
       return { move: move['direction'] };
     }
 
-    if (spaces > maxSpaces && !isTrapping && (!isRiskyFood || mySnakeHealth > 60) && !isHeadToHead) {
+    if (spaces > maxSpaces && !isTrapping && (!isRiskyFood || mySnakeHealth > 50) && !isHeadToHead) {
       maxSpaces = spaces;
       bestMove = move['direction'];
       foodDistance = currentFoodDistance;
     } else if (spaces === maxSpaces && !isTrapping && currentFoodDistance < foodDistance * aggressiveFoodFactor && !isHeadToHead) {
       bestMove = move['direction'];
       foodDistance = currentFoodDistance;
-    } else if (mySnakeHealth < 20 && currentFoodDistance < 3 && !isHeadToHead) {
+    } else if (mySnakeHealth < 30 && currentFoodDistance < 3 && !isHeadToHead) {
       bestMove = move['direction'];
       foodDistance = currentFoodDistance;
     }
