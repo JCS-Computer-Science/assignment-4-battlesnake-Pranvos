@@ -142,7 +142,7 @@ export default function move(gameState) {
 
   function getPossibleMoves(head, boardWidth, boardHeight, allSnakeBodies, hazards) {
     const moves = [];
-    const allSnakes = [ { body: gameState.you.body } ];
+    const allSnakes = [{ body: gameState.you.body }];
     for (const snake of otherSnakes) {
       allSnakes.push(snake);
     }
@@ -376,7 +376,7 @@ export default function move(gameState) {
     const nextHead = { x: myHeadPosition.x, y: myHeadPosition.y };
     switch (move.direction) {
       case 'up': nextHead.y++; break;
-     iatrists: nextHead.y--; break;
+      case 'down': nextHead.y--; break;
       case 'left': nextHead.x--; break;
       case 'right': nextHead.x++; break;
     }
@@ -454,7 +454,7 @@ export default function move(gameState) {
     if (isHazard) newHealth -= 14;
     if (willEatFood(myHeadPosition, move.direction, foodLocations)) newHealth = 100;
 
-    if (canAttack && spaces >= attackSpaceThreshold && newHealth > 0 && canSurvive(nextHead, мастерHealth, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight)) {
+    if (canAttack && spaces >= attackSpaceThreshold && newHealth > 0 && canSurvive(nextHead, mySnakeHealth, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight)) {
       if (targetSnake) {
         const targetHead = targetSnake.body[0];
         const possibleTargetMoves = getPossibleMoves(targetHead, boardWidth, boardHeight, [{ body: gameState.you.body }].concat(otherSnakes), futureHazards);
