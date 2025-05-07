@@ -59,16 +59,6 @@ export default function move(gameState) {
     }
   }
 
-  // Avoid hazards
-  for (const hazard of hazards) {
-    if (mySnakeHealth > 80) {
-      if (hazard['x'] === myHeadPosition['x'] + 1 && hazard['y'] === myHeadPosition['y']) moveSafety['right'] = false;
-      else if (hazard['x'] === myHeadPosition['x'] - 1 && hazard['y'] === myHeadPosition['y']) moveSafety['left'] = false;
-      else if (hazard['x'] === myHeadPosition['x'] && hazard['y'] === myHeadPosition['y'] + 1) moveSafety['up'] = false;
-      else if (hazard['x'] === myHeadPosition['x'] && hazard['y'] === myHeadPosition['y'] - 1) moveSafety['down'] = false;
-    }
-  }
-
   const safeMoves = Object['entries'](moveSafety)
     ['filter'](([, isSafe]) => isSafe)
     ['map'](([direction]) => direction);
@@ -81,7 +71,6 @@ export default function move(gameState) {
     if (myHeadPosition['x'] > center_x && moveSafety['left']) return { move: 'left' };
     if (myHeadPosition['y'] < center_y && moveSafety['up']) return { move: 'up' };
     if (myHeadPosition['y'] > center_y && moveSafety['down']) return { move: 'down' };
-
 
     const fallbackMoves = ["up", "right", "down", "left"];
     for (let i = 0; i < fallbackMoves['length']; i++) {
@@ -172,7 +161,7 @@ export default function move(gameState) {
 
     // my snake
     allSnakes['push']({ body: gameState['you']['body'] });
-    //  other snakes
+    // other snakes
     allSnakes['push'](...otherSnakes);
 
     if (head['x'] > 0 && !isOccupied({ x: head['x'] - 1, y: head['y'] }, allSnakes, hazards)) {
@@ -229,7 +218,7 @@ export default function move(gameState) {
   }
 
   // Prioritize food when health is low or snake is short
-  if (foodLocations['length'] > 0 && (mySnakeHealth < 20 || mySnakeLength < 5)) {
+  if (foodLocations['length'] > 0 && (mySnakeHealth < 50 || mySnakeLength < 5)) {
     let closestFood = findNearestFood(myHeadPosition, foodLocations);
     if (closestFood) {
       const dx = closestFood['x'] - myHeadPosition['x'];
@@ -240,6 +229,56 @@ export default function move(gameState) {
       else if (dx < 0 && moveSafety['left']) targetDirection = 'left';
       else if (dy > 0 && moveSafety['up']) targetDirection = 'up';
       else if (dy < 0 && moveSafety['down']) targetDirection = 'down';
+
+      if (targetDirection) {
+        let foodIsSafe = true;
+        for (const otherSnake of otherSnakes) {
+          if (otherSnake['body']['length'] >= mySnakeLength || otherSnake['body']['length'] + 1 > mySnakeLength) {
+            const otherSnakeHead = otherSnake['body'][0];
+            const myDistanceToFood = calculateDistance(myHeadPosition, closestFood);
+            const otherSnakeDistanceToFood = calculateDistance(otherSnakeHead, closestFood);
+            if (otherSnakeDistanceToFood < myDistanceToFood) {
+              foodIsSafe = false;
+              break;
+            }
+          }
+        }
+        if (foodIsSafe) {
+          return { move: targetDirection };
+        }
+      }
+    }
+  }
+
+  // Check for food in hazard zones
+  if (foodLocations['length'] > 0 && mySnakeHealth < 50) {
+    let closestFood = findNearestFood(myHeadPosition, foodLocations);
+    if (closestFood) {
+      const dx = closestFood['x'] - myHeadPosition['x'];
+      const dy = closestFood['y'] - myHeadPosition['y'];
+      let targetDirection;
+
+      // Allow moves into hazards if they lead to food
+      const hazardMoveSafety = {
+        up: true,
+        down: true,
+        left: true,
+        right: true
+      };
+
+      // Reapply self-collision checks for hazard moves
+      for (let i = 1; i < mySnakeLength; i++) {
+        const segment = gameState['you']['body'][i];
+        if (segment['x'] === myHeadPosition['x'] + 1 && segment['y'] === myHeadPosition['y']) hazardMoveSafety['right'] = false;
+        else if (segment['x'] === myHeadPosition['x'] - 1 && segment['y'] === myHeadPosition['y']) hazardMoveSafety['left'] = false;
+        else if (segment['x'] === myHeadPosition['x'] && segment['y'] === myHeadPosition['y'] + 1) hazardMoveSafety['up'] = false;
+        else if (segment['x'] === myHeadPosition['x'] && segment['y'] === myHeadPosition['y'] - 1) hazardMoveSafety['down'] = false;
+      }
+
+      if (dx > 0 && hazardMoveSafety['right']) targetDirection = 'right';
+      else if (dx < 0 && hazardMoveSafety['left']) targetDirection = 'left';
+      else if (dy > 0 && hazardMoveSafety['up']) targetDirection = 'up';
+      else if (dy < 0 && hazardMoveSafety['down']) targetDirection = 'down';
 
       if (targetDirection) {
         let foodIsSafe = true;
@@ -389,8 +428,7 @@ export default function move(gameState) {
     return { move: safeMoves[0] };
   }
 
-  // //move down if nothing else is safe
-  // return { move: 'down' };
+  return { move: 'down' };
 }
 
 export function getGameVerdict(gameState) {
