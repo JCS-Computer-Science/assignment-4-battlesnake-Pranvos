@@ -38,7 +38,7 @@ export default function move(gameState) {
   for (const snake of otherSnakes) {
     for (const segment of snake.body) {
       if (segment.x === myHeadPosition.x + 1 && segment.y === myHeadPosition.y) moveSafety.right = false;
-      else if (segment.x === myHeadPosition.x - 1 && segment.y === myHeadPosition.y) moveSafety.left = false;
+      else if (segment.x === myHeadPosition.x - 1 && segment.y === sentada.y) moveSafety.left = false;
       else if (segment.x === myHeadPosition.x && segment.y === myHeadPosition.y + 1) moveSafety.up = false;
       else if (segment.x === myHeadPosition.x && segment.y === myHeadPosition.y - 1) moveSafety.down = false;
     }
@@ -176,9 +176,9 @@ export default function move(gameState) {
     return false;
   }
 
-  function canSurvive(position, health, turns, snakeBody, otherSnakes, hazards, foodLocations, boardWidth, boardHeight, maxDepth = 10) {
+  function canSurvive(position, health, turns, snakeBody, otherSnakes, hazards, foodLocations, boardWidth, boardHeight, stormDamage, maxDepth = 10) {
     if (health <= 0) return false;
-    if (turns >= maxDepth) return true;
+    if (turns >= maxDepth) return health > stormDamage * 2; // Ensure enough health to survive a few more turns
 
     const newSnakeBody = [position];
     for (let i = 0; i < snakeBody.length - 1; i++) {
@@ -195,12 +195,14 @@ export default function move(gameState) {
 
     for (const move of possibleMoves) {
       const nextHead = { x: move.x, y: move.y };
-      let newHealth = health - 14;
+      let newHealth = health - stormDamage; // Apply storm damage each turn
+      const isHazard = hazards.some(h => h.x === nextHead.x && h.y === nextHead.y);
+      if (isHazard) newHealth -= 14; // Additional hazard damage
       if (willEatFood(position, move.direction, foodLocations)) {
-        newHealth = 100;
+        newHealth = 100; // Eating food restores health
       }
 
-      if (canSurvive(nextHead, newHealth, turns + 1, newSnakeBody, otherSnakes, hazards, foodLocations, boardWidth, boardHeight, maxDepth)) {
+      if (canSurvive(nextHead, newHealth, turns + 1, newSnakeBody, otherSnakes, hazards, foodLocations, boardWidth, boardHeight, stormDamage, maxDepth)) {
         return true;
       }
     }
@@ -224,7 +226,7 @@ export default function move(gameState) {
     futureHazards.push(hazard);
   }
 
-  if (mySnakeHealth > 30 && mySnakeLength > 3) {
+  if (mySnakeHealth > 50 && mySnakeLength > 3) {
     let closestSnake = null;
     let minDistance = Infinity;
     for (const snake of otherSnakes) {
@@ -256,7 +258,8 @@ export default function move(gameState) {
           case 'right': nextHead.x++; break;
         }
         const spaces = getAccessibleSpaces(nextHead, boardWidth, boardHeight, [{ body: gameState.you.body }].concat(otherSnakes), futureHazards);
-        if (spaces >= 3 && canSurvive(nextHead, mySnakeHealth, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight)) {
+        const isHazard = hazards.some(h => h.x === nextHead.x && h.y === nextHead.y);
+        if (!isHazard && spaces >= 3 && canSurvive(nextHead, mySnakeHealth - stormDamage, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight, stormDamage)) {
           return { move: targetDirection };
         }
       }
@@ -296,7 +299,8 @@ export default function move(gameState) {
             case 'left': nextHead.x--; break;
             case 'right': nextHead.x++; break;
           }
-          if (canSurvive(nextHead, mySnakeHealth, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight)) {
+          const isHazard = hazards.some(h => h.x === nextHead.x && h.y === nextHead.y);
+          if (!isHazard && canSurvive(nextHead, mySnakeHealth - stormDamage, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight, stormDamage)) {
             return { move: targetDirection };
           }
         }
@@ -304,7 +308,7 @@ export default function move(gameState) {
     }
   }
 
-  if (foodLocations.length > 0 && mySnakeHealth < 50) {
+  if (foodLocations.length > 0 && mySnakeHealth < 30) {
     const closestFood = findNearestFood(myHeadPosition, foodLocations);
     if (closestFood) {
       const dx = closestFood.x - myHeadPosition.x;
@@ -353,10 +357,10 @@ export default function move(gameState) {
             case 'right': nextHead.x++; break;
           }
           const isHazard = hazards.some(h => h.x === nextHead.x && h.y === nextHead.y);
-          let newHealth = mySnakeHealth;
+          let newHealth = mySnakeHealth - stormDamage;
           if (isHazard) newHealth -= 14;
           if (willEatFood(myHeadPosition, targetDirection, foodLocations)) newHealth = 100;
-          if (newHealth > 0 && canSurvive(nextHead, newHealth, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight)) {
+          if (newHealth > 28 && canSurvive(nextHead, newHealth, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight, stormDamage)) {
             return { move: targetDirection };
           }
         }
@@ -450,11 +454,11 @@ export default function move(gameState) {
     }
 
     const isHazard = hazards.some(h => h.x === nextHead.x && h.y === nextHead.y);
-    let newHealth = mySnakeHealth;
+    let newHealth = mySnakeHealth - stormDamage;
     if (isHazard) newHealth -= 14;
     if (willEatFood(myHeadPosition, move.direction, foodLocations)) newHealth = 100;
 
-    if (canAttack && spaces >= attackSpaceThreshold && newHealth > 0 && canSurvive(nextHead, mySnakeHealth, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight)) {
+    if (canAttack && spaces >= attackSpaceThreshold && !isHazard && newHealth > 28 && canSurvive(nextHead, mySnakeHealth - stormDamage, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight, stormDamage)) {
       if (targetSnake) {
         const targetHead = targetSnake.body[0];
         const possibleTargetMoves = getPossibleMoves(targetHead, boardWidth, boardHeight, [{ body: gameState.you.body }].concat(otherSnakes), futureHazards);
@@ -465,14 +469,14 @@ export default function move(gameState) {
       return { move: move.direction };
     }
 
-    if (spaces > maxSpaces && !isTrapping && (!isRiskyFood || mySnakeHealth > 50) && !isHeadToHead && newHealth > 0 && canSurvive(nextHead, newHealth, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight)) {
+    if (spaces > maxSpaces && !isTrapping && (!isRiskyFood || mySnakeHealth > 50) && !isHeadToHead && !isHazard && newHealth > 28 && canSurvive(nextHead, newHealth, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight, stormDamage)) {
       maxSpaces = spaces;
       bestMove = move.direction;
       foodDistance = currentFoodDistance;
-    } else if (spaces === maxSpaces && !isTrapping && currentFoodDistance < foodDistance * aggressiveFoodFactor && !isHeadToHead && newHealth > 0 && canSurvive(nextHead, newHealth, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight)) {
+    } else if (spaces === maxSpaces && !isTrapping && currentFoodDistance < foodDistance * aggressiveFoodFactor && !isHeadToHead && !isHazard && newHealth > 28 && canSurvive(nextHead, newHealth, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight, stormDamage)) {
       bestMove = move.direction;
       foodDistance = currentFoodDistance;
-    } else if (mySnakeHealth < 30 && currentFoodDistance < 3 && !isHeadToHead && newHealth > 0 && canSurvive(nextHead, newHealth, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight)) {
+    } else if (mySnakeHealth < 30 && currentFoodDistance < 3 && !isHeadToHead && newHealth > 28 && canSurvive(nextHead, newHealth, 0, gameState.you.body, otherSnakes, hazards, foodLocations, boardWidth, boardHeight, stormDamage)) {
       bestMove = move.direction;
       foodDistance = currentFoodDistance;
     }
@@ -534,6 +538,7 @@ export function getGameVerdict(gameState) {
           return false;
         }
       }
+markDown
     }
     return true;
   }
