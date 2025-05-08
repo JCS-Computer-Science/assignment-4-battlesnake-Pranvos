@@ -48,7 +48,7 @@ export default function move(gameState) {
     }
 
     // Check for potential head to head collisions
-    if (snake['body']['length'] >= mySnakeLength) { // Changed to strictly greater than
+    if (snake['body']['length'] >= mySnakeLength) { 
       const otherHeadX = snake['body'][0]['x'];
       const otherHeadY = snake['body'][0]['y'];
 
@@ -258,7 +258,7 @@ export default function move(gameState) {
   }
 
   // Prioritize food aggressively when health is moderate or snake is short
-  if (foodLocations['length'] > 0 && (mySnakeHealth < 70 || mySnakeLength < 7)) {
+  if (foodLocations['length'] > 0 && (mySnakeHealth < 70 || mySnakeLength < 10)) {
     let closestFood = findNearestFood(myHeadPosition, foodLocations);
     if (closestFood) {
       const dx = closestFood['x'] - myHeadPosition['x'];
@@ -291,7 +291,7 @@ export default function move(gameState) {
   }
 
   // Check for food in hazard zones
-  if (foodLocations['length'] > 0 && mySnakeHealth < 50) {
+  if (foodLocations['length'] > 0 && mySnakeHealth < 60) {
     let closestFood = findNearestFood(myHeadPosition, foodLocations);
     if (closestFood) {
       const dx = closestFood['x'] - myHeadPosition['x'];
