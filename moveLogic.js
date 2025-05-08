@@ -263,7 +263,7 @@ export default function move(gameState) {
   }
 
   // Prioritize food aggressively when health is moderate or snake is short
-  if (foodLocations['length'] > 0 && (mySnakeHealth < 70 || mySnakeLength < 10)) {
+  if (foodLocations['length'] > 0 && (mySnakeHealth < 70 || mySnakeLength < 8)) {
     let closestFood = findNearestFood(myHeadPosition, foodLocations);
     if (closestFood) {
       const dx = closestFood['x'] - myHeadPosition['x'];
@@ -296,7 +296,7 @@ export default function move(gameState) {
   }
 
   // Check for food in hazard zones
-  if (foodLocations['length'] > 0 && mySnakeHealth < 60) {
+  if (foodLocations['length'] > 0 && mySnakeHealth < 70) {
     let closestFood = findNearestFood(myHeadPosition, foodLocations);
     if (closestFood) {
       const dx = closestFood['x'] - myHeadPosition['x'];
@@ -350,7 +350,7 @@ export default function move(gameState) {
   let maxSpaces = -1;
   let foodDistance = Infinity;
   const aggressiveFoodFactor = 1.5;
-  const attackLengthDiff = 2;
+  const attackLengthDiff = 3;
   const attackSpaceThreshold = 3;
 
   for (const move of possibleMoves) {
