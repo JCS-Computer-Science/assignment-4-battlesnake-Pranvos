@@ -391,7 +391,7 @@ export default function move(gameState) {
         const otherHeadX = otherSnake['body'][0]['x'];
         const otherHeadY = otherSnake['body'][0]['y'];
         const attackDistance = calculateDistance(nextHead, { x: otherHeadX, y: otherHeadY });
-        if (attackDistance <= 3) {
+        if (attackDistance <= 2) {
           canAttack = true;
           targetSnake = otherSnake;
           targetMove = move['direction'];
