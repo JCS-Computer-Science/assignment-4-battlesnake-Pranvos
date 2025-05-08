@@ -223,7 +223,7 @@ export default function move(gameState) {
   }
 
   //  hunting logic for other snakes
-  if (mySnakeHealth > 40 && mySnakeLength > 3) {
+  if (mySnakeHealth > 60 && mySnakeLength > 8) {
     let closestSnake = null;
     let minDistance = Infinity;
     for (const snake of otherSnakes) {
@@ -255,7 +255,7 @@ export default function move(gameState) {
           case 'right': nextHead['x']++; break;
         }
         const spaces = getAccessibleSpaces(nextHead, boardWidth, boardHeight, [{ body: gameState['you']['body'] }, ...otherSnakes], futureHazards);
-        if (spaces >= 3) {
+        if (spaces >= 4) {
           return { move: targetDirection };
         }
       }
