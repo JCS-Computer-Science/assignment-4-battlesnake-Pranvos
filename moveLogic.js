@@ -124,7 +124,7 @@ export default function move(gameState) {
         { x: current.x + 1, y: current.y }
       ];
 
-      for (let i = 0; i < adjacentPositions.length; i++) { //iterating through adjacentPositions
+      for (let i = 0; i < adjacentPositions.length; i++) { 
         const nextPosition = adjacentPositions[i];
         if (
           nextPosition['x'] >= 0 &&
@@ -228,7 +228,6 @@ export default function move(gameState) {
     let bestMove = null;
     let maxSpaces = -1;
     let foodDistance = Infinity;
-    const aggressiveFoodFactor = 1.5;
     const attackLengthDiff = 3;
     const attackSpaceThreshold = 3;
     let targetSnake = null;
@@ -336,7 +335,7 @@ export default function move(gameState) {
         maxSpaces = spaces;
         bestMove = move['direction'];
         foodDistance = currentFoodDistance;
-      } else if (spaces === maxSpaces && !isTrapping && currentFoodDistance < foodDistance * aggressiveFoodFactor && !isHeadToHead) {
+      } else if (spaces === maxSpaces && !isTrapping && currentFoodDistance < foodDistance * 2.0 && !isHeadToHead) { // Increased multiplier to 2.0
         bestMove = move['direction'];
         foodDistance = currentFoodDistance;
       } else if (gameState['you']['health'] < 30 && currentFoodDistance < 3 && !isHeadToHead) {
